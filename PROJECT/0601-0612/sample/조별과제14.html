@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 기반 해외여행 매칭 및 예측 시스템</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between overflow-hidden">
+
+    <!-- ==================================================== -->
+    <!-- 1. 메인 웰컴 랜딩 페이지 (시작 화면) -->
+    <!-- ==================================================== -->
+    <div id="main-page" class="w-screen h-screen relative overflow-hidden bg-cover bg-center"
+        style="background-image: url('1.png');">
+
+        <!-- 좌측 메인 텍스트 & 액션 패널 (나침반 아이콘과 텍스트 영역의 가로 정렬) -->
+        <div class="absolute top-[6%] left-[8%] md:top-[8%] md:left-[10%] z-10 max-w-xl flex items-start space-x-4">
+
+            <!-- 나침반 & 꽃잎 모티브의 정교한 SVG 심볼 (왼쪽 정렬 고정) -->
+            <svg class="w-16 h-16 md:w-24 md:h-24 drop-shadow-sm flex-shrink-0" viewBox="0 0 100 100" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <!-- 배경 무한대 및 꽃잎 패턴 (오렌지/골드 그라데이션) -->
+                <path d="M50 15 C58 35, 42 35, 50 85 C42 65, 58 65, 50 15 Z" fill="url(#orangeGrad)" opacity="0.95" />
+                <path d="M15 50 C35 42, 35 58, 85 50 C65 58, 65 42, 15 50 Z" fill="url(#blueGrad)" opacity="0.95" />
+                <!-- 중앙 나침반 바늘 (샤프한 다이아몬드 지침) -->
+                <path d="M50 20 L55 45 L80 50 L55 55 L50 80 L45 55 L20 50 L45 45 Z" fill="url(#needleGrad)" />
+                <!-- 심볼 내부의 엠블럼 이니셜 (H & N 조합선) -->
+                <circle cx="50" cy="50" r="7" fill="#ffffff" class="shadow-sm" />
+                <circle cx="50" cy="50" r="4" fill="#0a2540" />
+
+                <!-- 그라데이션 정의 -->
+                <defs>
+                    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fbbf24" />
+                        <stop offset="100%" stop-color="#f97316" />
+                    </linearGradient>
+                    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#3b82f6" />
+                        <stop offset="100%" stop-color="#1d4ed8" />
+                    </linearGradient>
+                    <linearGradient id="needleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#38bdf8" />
+                        <stop offset="100%" stop-color="#0369a1" />
+                    </linearGradient>
+                </defs>
+            </svg>
+
+            <!-- 우측 정보 컬럼 (텍스트 아래에 시작하기 버튼이 오도록 세로로 묶음) -->
+            <div class="flex flex-col space-y-5">
+                <!-- 로고 텍스트 정보 (PREMIUM AI TRAVEL CURATOR 표기) -->
+                <div class="flex flex-col leading-none">
+                    <span class="text-3xl md:text-5xl font-black text-[#0a2540] tracking-tight">HANATOUR</span>
+                    <span
+                        class="text-[9px] md:text-[11px] font-extrabold tracking-wider text-amber-500 uppercase mt-2.5">
+                        PREMIUM AI TRAVEL CURATOR
+                    </span>
+                    <span class="text-[8px] md:text-[10px] font-bold tracking-tight text-slate-500 mt-1">
+                        글로벌 여행 큐레이션 AI
+                    </span>
+                </div>
+
+                <!-- 'Go' 액션 버튼 -->
+                <div>
+                    <button onclick="enterHanaTourApp()"
+                        class="group inline-flex items-center space-x-3 px-8 py-3.5 bg-gradient-to-r from-[#0a2540] to-[#162a45] hover:from-[#1d4ed8] hover:to-[#3b82f6] text-white font-extrabold text-base md:text-lg rounded-2xl shadow-lg transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-xl focus:outline-none">
+                        <span>Go</span>
+                        <i data-lucide="arrow-right"
+                            class="w-5 h-5 transform group-hover:translate-x-1.5 transition-transform duration-300"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================== -->
+    <!-- 2. AI 여행 매칭 및 예측 애플리케이션 화면 -->
+    <!-- ==================================================== -->
+    <div id="app-page" class="hidden flex-grow flex flex-col min-h-screen bg-slate-50">
+        <!-- 헤더 영역 -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+                <!-- ID: 웰컴 홈 버튼 및 정확히 매핑된 로고 파트 -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="goBackToMain()"
+                        class="text-slate-500 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-100 transition-all"
+                        title="메인 화면으로">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                    </button>
+
+                    <div class="h-8 w-px bg-slate-200"></div>
+
+                    <!-- [로고 세트] -->
+                    <div class="flex items-center space-x-3">
+                        <!-- 나침반 & 꽃잎 모티브의 정교한 SVG 심볼 -->
+                        <svg class="w-10 h-10 drop-shadow-sm" viewBox="0 0 100 100" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="M50 15 C58 35, 42 35, 50 85 C42 65, 58 65, 50 15 Z" fill="url(#headerOrangeGrad)"
+                                opacity="0.95" />
+                            <path d="M15 50 C35 42, 35 58, 85 50 C65 58, 65 42, 15 50 Z" fill="url(#headerBlueGrad)"
+                                opacity="0.95" />
+                            <path d="M50 20 L55 45 L80 50 L55 55 L50 80 L45 55 L20 50 L45 45 Z"
+                                fill="url(#headerNeedleGrad)" />
+                            <circle cx="50" cy="50" r="7" fill="#ffffff" class="shadow-sm" />
+                            <circle cx="50" cy="50" r="4" fill="#0a2540" />
+
+                            <defs>
+                                <linearGradient id="headerOrangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#fbbf24" />
+                                    <stop offset="100%" stop-color="#f97316" />
+                                </linearGradient>
+                                <linearGradient id="headerBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#1d4ed8" />
+                                </linearGradient>
+                                <linearGradient id="headerNeedleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#38bdf8" />
+                                    <stop offset="100%" stop-color="#0369a1" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+
+                        <!-- 로고 우측 텍스트 정보 -->
+                        <div class="flex items-col leading-none flex-col">
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="text-base font-black text-[#0a2540] tracking-tight">HANATOUR</span>
+                            </div>
+                            <span class="text-[8.5px] font-extrabold tracking-wider text-amber-500 uppercase mt-0.5">
+                                GLOBAL TRAVEL GUIDE · AI Curator
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 우측 가중치 정보 표시 배지 -->
+                <div
+                    class="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"></span>
+                    동적 가중치 100점 모델 작동 중
+                </div>
+            </div>
+        </header>
+
+        <!-- 메인 본문: 왼쪽 입력 폼(col-3), 중앙 리포트(col-6), 오른쪽 환율 정보(col-3)로 균형 잡힌 12분할 최적화 -->
+        <main
+            class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-grow pb-16">
+
+            <!-- 왼쪽: 데이터 입력 폼 및 실시간 프로모션 배지 광고 (lg:col-span-3) -->
+            <div class="lg:col-span-3 space-y-6">
+
+                <!-- 상세 검색 설정 카드 -->
+                <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm h-fit">
+                    <div class="flex items-center space-x-2 pb-4 mb-4 border-b border-slate-100">
+                        <i data-lucide="sliders" class="text-indigo-600 w-5 h-5"></i>
+                        <h2 class="text-base font-bold text-slate-900">상세 조건 분석 설정</h2>
+                    </div>
+
+                    <div
+                        class="mb-4 text-xs text-slate-500 bg-indigo-50 border border-indigo-100 p-3 rounded-xl leading-relaxed">
+                        <strong>💡 가중치 점수 분배 가이드</strong><br>
+                        • <strong>국가</strong>는 필수 지정 요소입니다.<br>
+                        • 국가를 포함하여 <strong>최소 2개 이상의 조건</strong>을 선택해야 분석이 시작됩니다.<br>
+                        • 선택한 항목들의 중요도를 균등 분할하여 <strong>100점 만점</strong>의 매칭률을 계산합니다.
+                    </div>
+
+                    <form id="matchingForm" class="space-y-4">
+                        <!-- 1. 국가 (필수) -->
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                                <span class="text-rose-500">*</span> 1. 국가 (필수)
+                            </label>
+                            <select id="inputCountry"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">-- 국가 선택 (필수) --</option>
+                                <option value="일본" selected>일본</option>
+                                <option value="베트남">베트남</option>
+                                <option value="태국">태국</option>
+                                <option value="프랑스">프랑스</option>
+                                <option value="대만">대만</option>
+                                <option value="중국">중국</option>
+                            </select>
+                        </div>
+
+                        <!-- 2. 연령 -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                2. 연령대
+                            </label>
+                            <select id="inputAge"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">무입력 (-)</option>
+                                <option value="15~19세">10대</option>
+                                <option value="20대">20대</option>
+                                <option value="30대">30대</option>
+                                <option value="40대">40대</option>
+                                <option value="50대">50대</option>
+                                <option value="60대">60대</option>
+                                <option value="70세이상">70세 이상</option>
+                            </select>
+                        </div>
+
+                        <!-- 3. 목적 -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                3. 여행 목적
+                            </label>
+                            <select id="inputPurpose"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">무입력 (-)</option>
+                                <option value="음식관광(지역 맛집 등)">음식관광 (지역 맛집 등)</option>
+                                <option value="휴식/휴양">휴식 및 쇼핑</option>
+                                <option value="자연 및 풍경감상">자연 및 풍경 감상</option>
+                                <option value="역사 유적지 방문">역사 유적지 방문</option>
+                                <option value="온천/스파">온천 및 스파</option>
+                            </select>
+                        </div>
+
+                        <!-- 4. 동반자 유형 -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                4. 동반자 유형
+                            </label>
+                            <select id="inputCompanionType"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">무입력 (-)</option>
+                                <option value="지인">지인 (친구/동료)</option>
+                                <option value="배우자">배우자</option>
+                                <option value="자녀">자녀</option>
+                                <option value="연인">연인</option>
+                            </select>
+                        </div>
+
+                        <!-- 5. 비용 (총여행비 범위 선택) -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                5. 선호 예산 비용 (총여행비 기준)
+                            </label>
+                            <select id="inputPriceRange"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">무입력 (-)</option>
+                                <option value="1">150만 원 미만</option>
+                                <option value="2">150만 원 이상 ~ 300만 원 미만</option>
+                                <option value="3">300만 원 이상 ~ 500만 원 미만</option>
+                                <option value="4">500만 원 이상</option>
+                            </select>
+                        </div>
+
+                        <!-- 6. 여행 일수 -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                6. 여행 일수
+                            </label>
+                            <select id="inputDays"
+                                class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
+                                <option value="">무입력 (-)</option>
+                                <option value="2">2일</option>
+                                <option value="3">3일</option>
+                                <option value="4">4일</option>
+                                <option value="5">5일</option>
+                                <option value="6">6일 이상</option>
+                            </select>
+                        </div>
+
+                        <!-- 에러 알림 영역 -->
+                        <div id="validationMsg"
+                            class="hidden text-xs font-semibold text-rose-500 bg-rose-50 border border-rose-100 p-3 rounded-lg">
+                        </div>
+
+                        <button type="button" id="calcBtn"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center space-x-2 mt-4">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                            <span>패턴 예측 및 순위 계산</span>
+                        </button>
+                    </form>
+                </section>
+
+                <!-- 왼쪽 배너 광고 영역 -->
+                <section id="travel-ad-section"
+                    class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 relative">
+                    <img src="2.jpg" alt="하나투어 초특가 프로모션" class="w-full h-auto block rounded-2xl"
+                        onerror="this.onerror=null; this.src='2.png';">
+                </section>
+
+            </div>
+
+            <!-- 가운데: 매칭 순위 및 AI 예측 세부정보 (lg:col-span-6) -->
+            <section class="lg:col-span-6 space-y-6">
+
+                <!-- 비주얼 상단 타이틀 카드 -->
+                <div
+                    class="bg-gradient-to-r from-indigo-700 to-violet-700 text-white rounded-2xl p-5 shadow-md relative overflow-hidden">
+                    <div class="relative z-10">
+                        <span
+                            class="bg-indigo-500/50 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">AI
+                            Target Estimation System</span>
+                        <h1 class="text-xl font-bold mt-2">여행 시나리오 매칭 결과</h1>
+                        <p class="text-indigo-100 text-xs mt-1">선택하신 다변수 분석 입력 항목들을 조합하여 실시간 100점 가중치 연산을 실행했습니다.</p>
+                    </div>
+                    <div class="absolute -right-10 -bottom-10 opacity-15">
+                        <i data-lucide="bar-chart-3" class="w-48 h-48"></i>
+                    </div>
+                </div>
+
+                <!-- 상위 1, 2, 3순위 결과 카드 (국가, 일자, 금액만 노출) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="rankingsWrapper">
+                    <!-- 동적 랭킹 요약 카드 렌더링 영역 -->
+                </div>
+
+                <!-- 클릭 시 표출되는 상세 데이터 리포트 (예측값 정보 + 실측 최저/최고/평균 케이스) -->
+                <div id="predictionDetailReport"
+                    class="hidden space-y-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+
+                    <!-- 분석카드 헤더 -->
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span
+                                class="bg-indigo-100 text-indigo-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-ping"></span>
+                                인공지능 모델링 활성화
+                            </span>
+                            <h3 class="text-base font-bold text-slate-900"><span id="detailCountryTitle"
+                                    class="text-indigo-600 font-extrabold">일본</span> 시뮬레이션 매칭 세부 리포트</h3>
+                        </div>
+                        <button id="closeDetailReportBtn" class="text-slate-400 hover:text-slate-600">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <!-- 1. 예측값(Prediction Variables) 영역 -->
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl space-y-4">
+                        <h4 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                            <i data-lucide="binary" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            데이터 기반 지능형 예측 수치 (Prediction Outcomes)
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+
+                            <!-- 왼쪽: 미선택 항목 중 (비용, 여행 일수, 목적) 예측 -->
+                            <div
+                                class="md:col-span-7 bg-white border border-slate-200 p-3.5 rounded-xl flex flex-col justify-between">
+                                <div>
+                                    <span
+                                        class="bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded">미입력
+                                        칼럼 추론 예측</span>
+                                    <p class="text-[11px] text-slate-400 mt-1 mb-3">조건에서 무선택(-) 처리된 필드들의 빅데이터 최적 보정값입니다.
+                                    </p>
+                                </div>
+                                <div class="space-y-2 text-xs" id="unselectedPredicts">
+                                    <!-- 동적으로 미입력 예측값이 추가됨 -->
+                                </div>
+                            </div>
+
+                            <!-- 오른쪽: 기본 예측 3종 (만족도 점수, 패키지 유형, 숙박 유형) -->
+                            <div class="md:col-span-5 grid grid-cols-1 gap-3">
+                                <!-- 만족도 점수 -->
+                                <div
+                                    class="bg-white border border-slate-200 p-3 rounded-xl text-center flex flex-col justify-center items-center">
+                                    <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wide">만족도 평점
+                                        예측</span>
+                                    <div class="text-2xl font-black text-amber-500 mt-1" id="predictScore">4.0 / 5.0
+                                    </div>
+                                </div>
+                                <!-- 패키지 및 숙박 유형 -->
+                                <div
+                                    class="bg-white border border-slate-200 p-3 rounded-xl flex flex-col justify-center space-y-2">
+                                    <div class="flex justify-between items-center text-[11px]">
+                                        <span class="font-bold text-emerald-600">추천 패키지</span>
+                                        <p class="font-bold text-slate-800" id="predictPackage">구매 안함</p>
+                                    </div>
+                                    <div
+                                        class="border-t border-slate-100 pt-1.5 flex justify-between items-center text-[11px]">
+                                        <span class="font-bold text-emerald-600">가장 적합한 숙소</span>
+                                        <p class="font-bold text-slate-800" id="predictAccom">호텔/리조트</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- 2. 실제 데이터 추출 예시 (최저 / 최고 / 평균) -->
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-900 mb-3 flex items-center gap-1.5">
+                            <i data-lucide="database" class="w-4.5 h-4.5 text-indigo-600"></i>
+                            실제 매칭 데이터 추출 분포 분석 (최저 / 평균 / 최고)
+                        </h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                            <!-- 최저 여행 금액 예시 -->
+                            <div
+                                class="border border-emerald-100 hover:border-emerald-200 rounded-xl p-3 flex flex-col justify-between bg-emerald-50/20">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span
+                                            class="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded">최저
+                                            예산 여행</span>
+                                        <i data-lucide="trending-down" class="text-emerald-500 w-3.5 h-3.5"></i>
+                                    </div>
+                                    <div class="text-slate-950 font-black text-base mb-2" id="detailMinPrice">-</div>
+                                    <div class="space-y-1 text-[11px] text-slate-600">
+                                        <p>• 연령대: <strong id="detailMinAge" class="text-slate-950">-</strong></p>
+                                        <p>• 여행 일수: <strong id="detailMinDays" class="text-slate-950">-</strong></p>
+                                        <p>• 목적: <strong id="detailMinPurpose" class="text-slate-950">-</strong></p>
+                                        <p>• 숙박 유형: <strong id="detailMinAccom" class="text-slate-950">-</strong></p>
+                                        <p>• 동반자 유형: <strong id="detailMinComp" class="text-slate-950">-</strong></p>
+                                        <p>• 패키지 여부: <strong id="detailMinPkg" class="text-slate-950">-</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 평균 여행 금액 예시 -->
+                            <div
+                                class="border border-indigo-100 hover:border-indigo-200 rounded-xl p-3 flex flex-col justify-between bg-indigo-50/20">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span
+                                            class="bg-indigo-100 text-indigo-800 text-[9px] font-bold px-1.5 py-0.5 rounded">평균
+                                            예산 여행</span>
+                                        <i data-lucide="scale" class="text-indigo-500 w-3.5 h-3.5"></i>
+                                    </div>
+                                    <div class="text-slate-950 font-black text-base mb-2" id="detailAvgPrice">-</div>
+                                    <div class="space-y-1 text-[11px] text-slate-600">
+                                        <p>• 연령대: <strong id="detailAvgAge" class="text-slate-950">-</strong></p>
+                                        <p>• 여행 일수: <strong id="detailAvgDays" class="text-slate-950">-</strong></p>
+                                        <p>• 목적: <strong id="detailAvgPurpose" class="text-slate-950">-</strong></p>
+                                        <p>• 숙박 유형: <strong id="detailAvgAccom" class="text-slate-950">-</strong></p>
+                                        <p>• 동반자 유형: <strong id="detailAvgComp" class="text-slate-950">-</strong></p>
+                                        <p>• 패키지 여부: <strong id="detailAvgPkg" class="text-slate-950">-</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 최고 여행 금액 예시 -->
+                            <div
+                                class="border border-rose-100 hover:border-rose-200 rounded-xl p-3 flex flex-col justify-between bg-rose-50/20">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span
+                                            class="bg-rose-100 text-rose-800 text-[9px] font-bold px-1.5 py-0.5 rounded">최고
+                                            예산 여행</span>
+                                        <i data-lucide="trending-up" class="text-rose-500 w-3.5 h-3.5"></i>
+                                    </div>
+                                    <div class="text-slate-950 font-black text-base mb-2" id="detailMaxPrice">-</div>
+                                    <div class="space-y-1 text-[11px] text-slate-600">
+                                        <p>• 연령대: <strong id="detailMaxAge" class="text-slate-950">-</strong></p>
+                                        <p>• 여행 일수: <strong id="detailMaxDays" class="text-slate-950">-</strong></p>
+                                        <p>• 목적: <strong id="detailMaxPurpose" class="text-slate-950">-</strong></p>
+                                        <p>• 숙박 유형: <strong id="detailMaxAccom" class="text-slate-950">-</strong></p>
+                                        <p>• 동반자 유형: <strong id="detailMaxComp" class="text-slate-950">-</strong></p>
+                                        <p>• 패키지 여부: <strong id="detailMaxPkg" class="text-slate-950">-</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- 기획전 가로형 배너 영역 (가운데 리포트 하단 정비) -->
+                    <div
+                        class="mt-6 p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg border border-indigo-500/20 relative overflow-hidden">
+                        <div
+                            class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.15),transparent_50%)]">
+                        </div>
+                        <div class="relative z-10 space-y-1 flex-grow">
+                            <div
+                                class="inline-flex items-center space-x-1.5 bg-indigo-500/20 border border-indigo-400/30 px-2 py-0.5 rounded-full text-[10px] font-semibold text-indigo-300">
+                                <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></span>
+                                <span>Hana AI Premium Special</span>
+                            </div>
+                            <h4 class="text-sm font-bold tracking-tight">나만을 위한 AI 최적 매칭 패키지 단독 예약전</h4>
+                            <p class="text-[11px] text-slate-300">지금 매칭된 여행지로 상품을 간편 예약해보세요. <strong
+                                    class="text-amber-400">하나 안심 케어 서비스 100% 무상 가입</strong> 혜택을 드립니다.</p>
+                        </div>
+                        <div class="relative z-10 flex-shrink-0">
+                            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                                class="group inline-flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md">
+                                <span>간편 견적 문의하기</span>
+                                <i data-lucide="arrow-right-circle" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- 오른쪽: 실시간 환율 정보 & 계산기 위젯 (lg:col-span-3 - 요청하신 빨간 박스 완벽 대응) -->
+            <aside class="lg:col-span-3 space-y-6">
+                <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4 h-fit">
+
+                    <!-- 위젯 헤더 -->
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="coins" class="text-indigo-600 w-5 h-5"></i>
+                            <h3 class="text-base font-bold text-slate-900">실시간 환율 정보</h3>
+                        </div>
+                        <div
+                            class="flex items-center space-x-1 bg-emerald-50 text-emerald-600 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 6개 통화 리스트 -->
+                    <div class="space-y-3" id="exchangeRateList">
+                        <!-- JPY -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-JPY">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇯🇵</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">일본 JPY <span
+                                            class="text-[9px] text-slate-400 font-normal">(100엔)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 90%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-JPY">885.50</p>
+                                <p class="text-[9px] text-emerald-500 font-bold mt-1" id="rate-diff-JPY">▲ 0.12%</p>
+                            </div>
+                        </div>
+                        <!-- VND -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-VND">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇻🇳</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">베트남 VND <span
+                                            class="text-[9px] text-slate-400 font-normal">(100동)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 40%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-VND">5.38</p>
+                                <p class="text-[9px] text-rose-500 font-bold mt-1" id="rate-diff-VND">▼ 0.05%</p>
+                            </div>
+                        </div>
+                        <!-- THB -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-THB">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇹🇭</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">태국 THB <span
+                                            class="text-[9px] text-slate-400 font-normal">(1바트)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 50%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-THB">37.80</p>
+                                <p class="text-[9px] text-emerald-500 font-bold mt-1" id="rate-diff-THB">▲ 0.08%</p>
+                            </div>
+                        </div>
+                        <!-- EUR -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-EUR">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇫🇷</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">프랑스 EUR <span
+                                            class="text-[9px] text-slate-400 font-normal">(1유로)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 90%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-EUR">1,485.20</p>
+                                <p class="text-[9px] text-rose-500 font-bold mt-1" id="rate-diff-EUR">▼ 0.14%</p>
+                            </div>
+                        </div>
+                        <!-- TWD -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-TWD">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇹🇼</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">대만 TWD <span
+                                            class="text-[9px] text-slate-400 font-normal">(1달러)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 40%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-TWD">41.60</p>
+                                <p class="text-[9px] text-emerald-500 font-bold mt-1" id="rate-diff-TWD">▲ 0.22%</p>
+                            </div>
+                        </div>
+                        <!-- CNY -->
+                        <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition-all"
+                            id="rate-row-CNY">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="text-xl">🇨🇳</span>
+                                <div class="leading-none">
+                                    <p class="text-xs font-bold text-slate-950">중국 CNY <span
+                                            class="text-[9px] text-slate-400 font-normal">(1위안)</span></p>
+                                    <p class="text-[9px] text-slate-400 font-medium mt-0.5">일반 우대 최대 50%</p>
+                                </div>
+                            </div>
+                            <div class="text-right leading-none">
+                                <p class="text-xs font-black text-slate-950" id="rate-val-CNY">189.40</p>
+                                <p class="text-[9px] text-rose-500 font-bold mt-1" id="rate-diff-CNY">▼ 0.02%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 실시간 환율 간편 계산기 -->
+                    <div class="bg-slate-50 rounded-2xl p-4 space-y-3 border border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-900">환율 계산기</span>
+                            <span class="text-[10px] text-slate-400" id="rate-update-time">최종 갱신: 로딩 중...</span>
+                        </div>
+
+                        <!-- 입력 1: 원화 (KRW) -->
+                        <div class="space-y-1">
+                            <label class="block text-[10px] text-slate-500 font-semibold">보낼 금액 (KRW)</label>
+                            <div class="relative rounded-xl shadow-sm">
+                                <input type="number" id="calcInputKRW" value="1000000" step="10000"
+                                    class="w-full bg-white border border-slate-300 rounded-xl pl-3 pr-12 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-slate-500 text-[10px] font-bold">원</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 양방향 화살표 기호 -->
+                        <div class="flex justify-center -my-1.5 relative z-10">
+                            <div class="bg-white border border-slate-200 p-1.5 rounded-full shadow-sm text-indigo-500">
+                                <i data-lucide="arrow-down-up" class="w-3.5 h-3.5"></i>
+                            </div>
+                        </div>
+
+                        <!-- 입력 2: 대상 외화 -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between">
+                                <label class="block text-[10px] text-slate-500 font-semibold">받을 외화</label>
+                                <select id="calcCurrencySelect"
+                                    class="bg-transparent border-0 text-[11px] font-extrabold text-indigo-600 focus:ring-0 cursor-pointer pr-1">
+                                    <option value="JPY">일본 JPY (¥)</option>
+                                    <option value="VND">베트남 VND (₫)</option>
+                                    <option value="THB">태국 THB (฿)</option>
+                                    <option value="EUR">프랑스 EUR (€)</option>
+                                    <option value="TWD">대만 TWD (NT$)</option>
+                                    <option value="CNY">중국 CNY (¥)</option>
+                                </select>
+                            </div>
+                            <div class="relative rounded-xl shadow-sm">
+                                <input type="text" id="calcOutputForeign" readonly
+                                    class="w-full bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs font-extrabold text-slate-600 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div
+                            class="pt-1.5 border-t border-slate-200/50 flex justify-between items-center text-[10px] text-slate-400">
+                            <span>* 환전 우대 90% 기준 가상 견적</span>
+                            <button onclick="alert('하나 안심 환전 우대 프로모션 신청 완료! 지점 수령 가능 문자 메시지가 발송됩니다.')"
+                                class="text-indigo-600 font-bold hover:underline">모바일 환전 신청</button>
+                        </div>
+                    </div>
+
+                </section>
+            </aside>
+        </main>
+
+        <!-- ==================================================== -->
+        <!-- [고화질 프리미엄 Footer 영역] -->
+        <!-- ==================================================== -->
+        <footer class="mt-auto border-t border-slate-200 bg-white pt-12 pb-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-100">
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-lg font-black text-[#0a2540] tracking-tight">HANATOUR</span>
+                            <span class="text-[8px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded uppercase">AI
+                                Curator</span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            하나투어 글로벌 AI 큐레이터는 2천만 명의 시뮬레이션 여행 패턴 데이터를 바탕으로 동적 100점 가중치 연산을 통해 최고의 신뢰성 있는 여행 일정을 분석 및
+                            추천합니다.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-[#0a2540] uppercase tracking-wider mb-4">대표 서비스 및 안심 보장
+                        </h4>
+                        <ul class="space-y-2 text-xs text-slate-500">
+                            <li class="flex items-center gap-1.5"><i data-lucide="shield-check"
+                                    class="w-3.5 h-3.5 text-emerald-500"></i> 하나 안심 케어 서비스 보장</li>
+                            <li class="flex items-center gap-1.5"><i data-lucide="check"
+                                    class="w-3.5 h-3.5 text-slate-400"></i> 100점 맞춤형 동적 가중치 분석</li>
+                            <li class="flex items-center gap-1.5"><i data-lucide="check"
+                                    class="w-3.5 h-3.5 text-slate-400"></i> 글로벌 패키지 안심 케어 보험</li>
+                            <li class="flex items-center gap-1.5"><i data-lucide="check"
+                                    class="w-3.5 h-3.5 text-slate-400"></i> 현지 24시간 한국어 케어 센터</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-[#0a2540] uppercase tracking-wider mb-4">고객 만족 센터</h4>
+                        <p class="text-lg font-extrabold text-indigo-600 mb-1">1577-1234</p>
+                        <p class="text-[10px] text-slate-400 leading-relaxed">
+                            평일 09:00 - 18:00 (주말 및 공휴일 휴무)<br>
+                            AI 예측 가동 기술 제휴 및 단체 맞춤 패키지 견적 문의<br>
+                            E-mail: support@hanatour-flyingfour.com
+                        </p>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-xs font-extrabold text-[#0a2540] uppercase tracking-wider mb-2">글로벌 제휴 파트너</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-[10px] bg-slate-100 px-2.5 py-1 rounded text-slate-500">IATA 정회원</span>
+                            <span class="text-[10px] bg-slate-100 px-2.5 py-1 rounded text-slate-500">KATA 가입회원</span>
+                            <span class="text-[10px] bg-slate-100 px-2.5 py-1 rounded text-slate-500">Flying-Four AI
+                                Lab</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400">
+                    <p class="text-center sm:text-left">© 2026 Hana AI Recommendation Systems. Created by Team
+                        Flying-Four. All Rights Reserved.</p>
+                    <div class="flex space-x-4 mt-4 sm:mt-0">
+                        <a href="#" class="hover:text-indigo-600 transition-colors">이용약관</a>
+                        <span class="text-slate-300">|</span>
+                        <a href="#" class="hover:text-indigo-600 font-bold transition-colors">개인정보처리방침</a>
+                        <span class="text-slate-300">|</span>
+                        <a href="#" class="hover:text-indigo-600 transition-colors">여행안심보장규정</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // 공통 시뮬레이션 데이터셋
+        const dataset = [
+            { gender: "여자", age: "20대", country: "프랑스", totalPrice: 9060000, perPersonPrice: 3020000, days: 6, companions: 3, companionType: "지인", packageType: "부분 패키지 상품 구매", purpose: "역사 유적지 방문", score: 4.5, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "40대", country: "태국", totalPrice: 3490000, perPersonPrice: 1160000, days: 3, companions: 3, companionType: "배우자", packageType: "부분 패키지 상품 구매", purpose: "음식관광(지역 맛집 등)", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "20대", country: "일본", totalPrice: 5190000, perPersonPrice: 1730000, days: 3, companions: 3, companionType: "지인", packageType: "구매 안함", purpose: "음식관광(지역 맛집 등)", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "남자", age: "20대", country: "일본", totalPrice: 3660000, perPersonPrice: 1830000, days: 3, companions: 2, companionType: "지인", packageType: "구매 안함", purpose: "음식관광(지역 맛집 등)", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "남자", age: "50대", country: "태국", totalPrice: 4970000, perPersonPrice: 1660000, days: 3, companions: 3, companionType: "배우자", packageType: "전체 패키지 상품 구매", purpose: "자연 및 풍경감상", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "15~19세", country: "일본", totalPrice: 3260000, perPersonPrice: 1630000, days: 3, companions: 2, companionType: "연인", packageType: "구매 안함", purpose: "음식관광(지역 맛집 등)", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "20대", country: "베트남", totalPrice: 1520000, perPersonPrice: 100000, days: 4, companions: 16, companionType: "지인", packageType: "전체 패키지 상품 구매", purpose: "휴식/휴양", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "남자", age: "70세이상", country: "일본", totalPrice: 1510000, perPersonPrice: 100000, days: 3, companions: 15, companionType: "지인", packageType: "전체 패키지 상품 구매", purpose: "역사 유적지 방문", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "50대", country: "일본", totalPrice: 1240000, perPersonPrice: 620000, days: 3, companions: 2, companionType: "자녀", packageType: "구매 안함", purpose: "자연 및 풍경감상", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "40대", country: "대만", totalPrice: 1200000, perPersonPrice: 80000, days: 3, companions: 15, companionType: "지인", packageType: "전체 패키지 상품 구매", purpose: "음식관광(지역 맛집 등)", score: 4.5, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "60대", country: "중국", totalPrice: 1760000, perPersonPrice: 880000, days: 2, companions: 2, companionType: "배우자", packageType: "전체 패키지 상품 구매", purpose: "자연 및 풍경감상", score: 3.0, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "40대", country: "베트남", totalPrice: 1750000, perPersonPrice: 120000, days: 4, companions: 15, companionType: "지인", packageType: "전체 패키지 상품 구매", purpose: "온천/스파", score: 4.0, accommodation: "호텔/리조트" },
+            { gender: "남자", age: "30대", country: "프랑스", totalPrice: 8500000, perPersonPrice: 2833000, days: 7, companions: 3, companionType: "지인", packageType: "구매 안함", purpose: "역사 유적지 방문", score: 4.8, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "30대", country: "태국", totalPrice: 2200000, perPersonPrice: 1100000, days: 4, companions: 2, companionType: "배우자", packageType: "구매 안함", purpose: "휴식/휴양", score: 4.2, accommodation: "호텔/리조트" },
+            { gender: "남자", age: "40대", country: "대만", totalPrice: 1980000, perPersonPrice: 990000, days: 3, companions: 2, companionType: "배우자", packageType: "부분 패키지", purpose: "음식관광(지역 맛집 등)", score: 4.1, accommodation: "호텔/리조트" },
+            { gender: "여자", age: "20대", country: "중국", totalPrice: 1150000, perPersonPrice: 575000, days: 3, companions: 2, companionType: "지인", packageType: "구매 안함", purpose: "쇼핑", score: 3.8, accommodation: "게스트하우스/민박" }
+        ];
+
+        // 글로벌 기본 환율 정보 (API 통신 불가시 폴백 및 간편 대조선 기준 데이터)
+        const exchangeRates = {
+            JPY: 885.50, // 100엔 기준
+            VND: 5.38,   // 100동 기준
+            THB: 37.80,  // 1바트 기준
+            EUR: 1485.20,// 1유로 기준
+            TWD: 41.60,  // 1달러 기준
+            CNY: 189.40  // 1위안 기준
+        };
+
+        const countryToCurrencyMap = {
+            "일본": "JPY",
+            "베트남": "VND",
+            "태국": "THB",
+            "프랑스": "EUR",
+            "대만": "TWD",
+            "중국": "CNY"
+        };
+
+        let lastEvaluatedRankings = [];
+        let currentInputData = {};
+
+        // ----------------------------------------------------
+        // 환율 모듈 실행기 & 실시간 API fetch 기능
+        // ----------------------------------------------------
+        async function fetchRealtimeRates() {
+            try {
+                // KRW 기준 글로벌 통화 데이터 획득 시도 (CORS 및 비동기 보호 탑재)
+                const res = await fetch("https://open.er-api.com/v6/latest/KRW");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.rates) {
+                        // 계산: 1 KRW 대비 target 통화 배수이므로 역수로 환산
+                        // JPY (100 JPY 대비 KRW 가치 계산)
+                        exchangeRates.JPY = parseFloat(((100 / data.rates.JPY)).toFixed(2));
+                        exchangeRates.VND = parseFloat(((100 / data.rates.VND)).toFixed(2));
+                        exchangeRates.THB = parseFloat(((1 / data.rates.THB)).toFixed(2));
+                        exchangeRates.EUR = parseFloat(((1 / data.rates.EUR)).toFixed(2));
+                        exchangeRates.TWD = parseFloat(((1 / data.rates.TWD)).toFixed(2));
+                        exchangeRates.CNY = parseFloat(((1 / data.rates.CNY)).toFixed(2));
+
+                        console.log("실시간 환율 수신 완결: ", exchangeRates);
+                    }
+                }
+            } catch (error) {
+                console.log("환율 API 수신 지연으로 준비된 우량 기준율을 적용합니다.");
+            } finally {
+                updateExchangeUI();
+                executeExchangeCalculation();
+            }
+        }
+
+        function updateExchangeUI() {
+            // UI 레이아웃에 가져온 값 매칭
+            document.getElementById('rate-val-JPY').innerText = exchangeRates.JPY.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+            document.getElementById('rate-val-VND').innerText = exchangeRates.VND.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+            document.getElementById('rate-val-THB').innerText = exchangeRates.THB.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+            document.getElementById('rate-val-EUR').innerText = exchangeRates.EUR.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+            document.getElementById('rate-val-TWD').innerText = exchangeRates.TWD.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+            document.getElementById('rate-val-CNY').innerText = exchangeRates.CNY.toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+
+            // 최종 동적 갱신 타임스탬프 기록
+            const now = new Date();
+            document.getElementById('rate-update-time').innerText = `최종 갱신: ${now.toLocaleTimeString('ko-KR', { hour12: false })}`;
+        }
+
+        // 라이브 장세 연출을 위한 주기적인 미세 변동 시뮬레이터 (6초 간격)
+        function startLiveRateFluctuation() {
+            setInterval(() => {
+                const currencies = Object.keys(exchangeRates);
+                const randomKey = currencies[Math.floor(Math.random() * currencies.length)];
+
+                // -0.15% ~ +0.15% 사이의 미세 틱 파동 연출
+                const percentageChange = (Math.random() * 0.3 - 0.15);
+                const oldValue = exchangeRates[randomKey];
+                const newValue = oldValue * (1 + percentageChange / 100);
+
+                exchangeRates[randomKey] = parseFloat(newValue.toFixed(2));
+
+                // UI 갱신 & 등락 배지 갱신
+                const valueEl = document.getElementById(`rate-val-${randomKey}`);
+                const diffEl = document.getElementById(`rate-diff-${randomKey}`);
+                const rowEl = document.getElementById(`rate-row-${randomKey}`);
+
+                if (valueEl && diffEl && rowEl) {
+                    valueEl.innerText = exchangeRates[randomKey].toLocaleString('ko-KR', { minimumFractionDigits: 2 });
+
+                    if (percentageChange >= 0) {
+                        diffEl.innerText = `▲ ${percentageChange.toFixed(2)}%`;
+                        diffEl.className = "text-[9px] text-emerald-500 font-bold mt-1";
+                    } else {
+                        diffEl.innerText = `▼ ${Math.abs(percentageChange).toFixed(2)}%`;
+                        diffEl.className = "text-[9px] text-rose-500 font-bold mt-1";
+                    }
+
+                    // 갱신 시 플래시 효과 추가
+                    rowEl.classList.add('bg-indigo-50/50');
+                    setTimeout(() => {
+                        rowEl.classList.remove('bg-indigo-50/50');
+                    }, 800);
+                }
+
+                // 활성화된 타겟 계산기도 재가동
+                executeExchangeCalculation();
+            }, 6000);
+        }
+
+        // 환율 간편 계산기 로직
+        function executeExchangeCalculation() {
+            const krwVal = parseFloat(document.getElementById('calcInputKRW').value) || 0;
+            const targetCurr = document.getElementById('calcCurrencySelect').value;
+            const outputEl = document.getElementById('calcOutputForeign');
+
+            if (!outputEl) return;
+
+            let converted = 0;
+            let unitSymbol = "";
+
+            switch (targetCurr) {
+                case "JPY":
+                    converted = (krwVal / exchangeRates.JPY) * 100;
+                    unitSymbol = " ¥ (엔)";
+                    break;
+                case "VND":
+                    converted = (krwVal / exchangeRates.VND) * 100;
+                    unitSymbol = " ₫ (동)";
+                    break;
+                case "THB":
+                    converted = krwVal / exchangeRates.THB;
+                    unitSymbol = " ฿ (바트)";
+                    break;
+                case "EUR":
+                    converted = krwVal / exchangeRates.EUR;
+                    unitSymbol = " € (유로)";
+                    break;
+                case "TWD":
+                    converted = krwVal / exchangeRates.TWD;
+                    unitSymbol = " NT$ (대만달러)";
+                    break;
+                case "CNY":
+                    converted = krwVal / exchangeRates.CNY;
+                    unitSymbol = " ¥ (위안)";
+                    break;
+            }
+
+            outputEl.value = `${Math.floor(converted).toLocaleString('ko-KR')}${unitSymbol}`;
+        }
+
+        // ----------------------------------------------------
+        // 메인 페이지 및 앱 전환 기능 함수
+        // ----------------------------------------------------
+        function enterHanaTourApp() {
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('app-page').classList.remove('hidden');
+            document.body.classList.remove('overflow-hidden');
+            document.body.classList.add('overflow-y-auto');
+            calculatePredictiveMatch(); // 기본 초기 세팅 큐레이션 실행
+            fetchRealtimeRates(); // 실시간 환율 정보 수신
+        }
+
+        function goBackToMain() {
+            document.getElementById('app-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            document.body.classList.remove('overflow-y-auto');
+        }
+
+        // ----------------------------------------------------
+        // 핵심 비즈니스 연산 로직 (가중치 연산 및 매칭 설계)
+        // ----------------------------------------------------
+        function calculatePredictiveMatch() {
+            const wantedCountry = document.getElementById('inputCountry').value || "일본";
+            const ageVal = document.getElementById('inputAge').value;
+            const purposeVal = document.getElementById('inputPurpose').value;
+            const companionVal = document.getElementById('inputCompanionType').value;
+            const priceRangeVal = document.getElementById('inputPriceRange').value;
+            const daysVal = document.getElementById('inputDays').value;
+
+            // 디폴트 보장 장치
+            if (!document.getElementById('inputCountry').value) {
+                document.getElementById('inputCountry').value = "일본";
+            }
+
+            const valMsg = document.getElementById('validationMsg');
+            valMsg.classList.add('hidden');
+
+            let selectedCriteria = [];
+            selectedCriteria.push({ key: 'country', value: wantedCountry });
+
+            if (ageVal) selectedCriteria.push({ key: 'age', value: ageVal });
+            if (purposeVal) selectedCriteria.push({ key: 'purpose', value: purposeVal });
+            if (companionVal) selectedCriteria.push({ key: 'companionType', value: companionVal });
+            if (priceRangeVal) selectedCriteria.push({ key: 'priceRange', value: priceRangeVal });
+            if (daysVal) selectedCriteria.push({ key: 'days', value: parseInt(daysVal) });
+
+            currentInputData = {
+                country: wantedCountry,
+                age: ageVal,
+                purpose: purposeVal,
+                companionType: companionVal,
+                priceRange: priceRangeVal,
+                days: daysVal ? parseInt(daysVal) : null
+            };
+
+            const weightPerItem = 100 / selectedCriteria.length;
+            const countryGroup = {};
+            const allCountries = [...new Set(dataset.map(d => d.country))];
+
+            allCountries.forEach(cntry => {
+                const cRecords = dataset.filter(r => r.country === cntry);
+                let maxCountryScore = 0;
+
+                cRecords.forEach(record => {
+                    let scoreSum = 0;
+                    selectedCriteria.forEach(crit => {
+                        if (crit.key === 'country') {
+                            if (record.country === crit.value) scoreSum += weightPerItem;
+                        } else if (crit.key === 'days') {
+                            if (record.days === crit.value) scoreSum += weightPerItem;
+                        } else if (crit.key === 'priceRange') {
+                            const price = record.totalPrice;
+                            let currentRange = "";
+                            if (price < 1500000) currentRange = "1";
+                            else if (price >= 1500000 && price < 3000000) currentRange = "2";
+                            else if (price >= 3000000 && price < 5000000) currentRange = "3";
+                            else if (price >= 5000000) currentRange = "4";
+
+                            if (currentRange === crit.value) scoreSum += weightPerItem;
+                        } else {
+                            if (record[crit.key] === crit.value) scoreSum += weightPerItem;
+                        }
+                    });
+                    if (scoreSum > maxCountryScore) {
+                        maxCountryScore = scoreSum;
+                    }
+                });
+
+                const totalPriceSum = cRecords.reduce((s, r) => s + r.totalPrice, 0);
+                const totalDaysSum = cRecords.reduce((s, r) => s + r.days, 0);
+                const avgPrice = Math.round(totalPriceSum / cRecords.length);
+                const avgDays = Math.round((totalDaysSum / cRecords.length) * 10) / 10;
+
+                countryGroup[cntry] = {
+                    country: cntry,
+                    matchScore: Math.round(maxCountryScore),
+                    avgPrice: avgPrice,
+                    avgDays: avgDays,
+                    records: cRecords
+                };
+            });
+
+            let firstRank = countryGroup[wantedCountry];
+            if (!firstRank) {
+                firstRank = { country: wantedCountry, matchScore: 100, avgPrice: 2000000, avgDays: 3.5, records: dataset.filter(r => r.country === wantedCountry) };
+            }
+
+            const targetOthers = Object.values(countryGroup)
+                .filter(c => c.country !== wantedCountry)
+                .sort((a, b) => b.matchScore - a.matchScore || b.avgPrice - a.avgPrice);
+
+            let finalRankings = [firstRank];
+            if (targetOthers[0]) finalRankings.push(targetOthers[0]);
+            if (targetOthers[1]) finalRankings.push(targetOthers[1]);
+
+            lastEvaluatedRankings = finalRankings;
+            renderSummaryCards(finalRankings);
+        }
+
+        // ----------------------------------------------------
+        // 결과값 요약 카드 노출 (파란색 하이라이트 동적 부여)
+        // ----------------------------------------------------
+        function renderSummaryCards(rankings) {
+            const wrapper = document.getElementById('rankingsWrapper');
+            wrapper.innerHTML = '';
+
+            rankings.forEach((item, index) => {
+                const rank = index + 1;
+                let badgeStyle = "bg-slate-100 text-slate-800";
+
+                if (rank === 1) {
+                    badgeStyle = "bg-indigo-600 text-white font-bold";
+                } else if (rank === 2) {
+                    badgeStyle = "bg-slate-800 text-white font-semibold";
+                } else if (rank === 3) {
+                    badgeStyle = "bg-amber-500 text-white font-semibold";
+                }
+
+                // ID를 국가 기준으로 부여하여 동적 테두리 제어가 가능하도록 설계
+                const cardHtml = `
+          <div id="ranking-card-${item.country}" onclick="toggleAnalysisDetails('${item.country}')" class="ranking-card bg-white border border-slate-200 rounded-2xl p-4 shadow-sm transition-all duration-200 transform hover:-translate-y-1 hover:shadow-md cursor-pointer flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="${badgeStyle} text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                  ${rank}순위 추천결과
+                </span>
+                <span class="text-[9px] text-slate-400 font-bold">
+                  매칭점수: ${item.matchScore}점
+                </span>
+              </div>
+              
+              <h3 class="text-xl font-bold text-slate-900 mb-3">${item.country}</h3>
+
+              <div class="space-y-1 text-xs text-slate-600 pt-2.5 border-t border-slate-100">
+                <div class="flex justify-between">
+                  <span>평균 일자</span>
+                  <strong class="text-slate-900">${item.avgDays}일 일정</strong>
+                </div>
+                <div class="flex justify-between">
+                  <span>평균 금액</span>
+                  <strong class="text-indigo-600 font-bold">${item.avgPrice.toLocaleString()}원</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] text-indigo-500 font-bold">
+              <span>상세 정보 및 예측 데이터 확인</span>
+              <i data-lucide="chevrons-down" class="w-3.5 h-3.5"></i>
+            </div>
+          </div>
+        `;
+                wrapper.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+            lucide.createIcons();
+
+            // 최초 로드 시 1위 카드를 강제 활성화 터치
+            if (rankings.length > 0) {
+                toggleAnalysisDetails(rankings[0].country);
+            }
+        }
+
+        // ----------------------------------------------------
+        // 상세 보기 및 미입력 예측값 연산
+        // ----------------------------------------------------
+        window.toggleAnalysisDetails = function (countryName) {
+            const matchObj = lastEvaluatedRankings.find(r => r.country === countryName);
+            if (!matchObj) return;
+
+            const records = matchObj.records;
+            if (records.length === 0) return;
+
+            // [동적 테두리 하이라이트 제어]
+            document.querySelectorAll('.ranking-card').forEach(card => {
+                card.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-500/10');
+                card.classList.add('border-slate-200');
+            });
+
+            const activeCard = document.getElementById(`ranking-card-${countryName}`);
+            if (activeCard) {
+                activeCard.classList.remove('border-slate-200');
+                activeCard.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-500/10');
+            }
+
+            // [계산기 국가 자동 동기화 적용]
+            const targetCurrency = countryToCurrencyMap[countryName];
+            if (targetCurrency) {
+                const selectEl = document.getElementById('calcCurrencySelect');
+                if (selectEl) {
+                    selectEl.value = targetCurrency;
+                    executeExchangeCalculation(); // 동기화 후 즉각 변환 계산
+                }
+            }
+
+            document.getElementById('detailCountryTitle').innerText = countryName;
+
+            const unselectedContainer = document.getElementById('unselectedPredicts');
+            unselectedContainer.innerHTML = '';
+
+            let predictBuffer = [];
+
+            if (!currentInputData.priceRange) {
+                const averageCost = Math.round(records.reduce((s, r) => s + r.totalPrice, 0) / records.length);
+                predictBuffer.push({ name: "예상 합리적 여행 비용", val: averageCost.toLocaleString() + " 원 (평균가)" });
+            }
+
+            if (!currentInputData.days) {
+                const averageDays = Math.round(records.reduce((s, r) => s + r.days, 0) / records.length);
+                predictBuffer.push({ name: "가장 알맞은 여행 일수", val: averageDays + "일 일정" });
+            }
+
+            if (!currentInputData.purpose) {
+                const topPurpose = findMostFrequent(records, 'purpose');
+                predictBuffer.push({ name: "선호도 높은 여행 목적", val: topPurpose });
+            }
+
+            if (predictBuffer.length === 0) {
+                unselectedContainer.innerHTML = `<p class="text-xs text-slate-400">비용, 일수, 목적 데이터가 모두 사용자에 의해 지정되었습니다. 예측 연산이 완료되었습니다.</p>`;
+            } else {
+                predictBuffer.forEach(p => {
+                    unselectedContainer.insertAdjacentHTML('beforeend', `
+            <div class="flex justify-between border-b border-slate-100 pb-1.5 last:border-0 last:pb-0">
+              <span class="text-slate-500 font-medium">${p.name}</span>
+              <strong class="text-indigo-700 font-bold">${p.val}</strong>
+            </div>
+          `);
+                });
+            }
+
+            const avgScoreVal = records.reduce((s, r) => s + r.score, 0) / records.length;
+            document.getElementById('predictScore').innerText = avgScoreVal.toFixed(2) + " / 5.0";
+            document.getElementById('predictPackage').innerText = findMostFrequent(records, 'packageType');
+            document.getElementById('predictAccom').innerText = findMostFrequent(records, 'accommodation');
+
+            const sortedByPrice = [...records].sort((a, b) => a.totalPrice - b.totalPrice);
+            const minData = sortedByPrice[0];
+            const maxData = sortedByPrice[sortedByPrice.length - 1];
+
+            const averagePriceVal = records.reduce((s, r) => s + r.totalPrice, 0) / records.length;
+            let avgData = records[0];
+            let minDiff = Math.abs(records[0].totalPrice - averagePriceVal);
+
+            records.forEach(r => {
+                let diff = Math.abs(r.totalPrice - averagePriceVal);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    avgData = r;
+                }
+            });
+
+            document.getElementById('detailMinPrice').innerText = minData.totalPrice.toLocaleString() + " 원";
+            document.getElementById('detailMinAge').innerText = minData.age;
+            document.getElementById('detailMinDays').innerText = minData.days + "일";
+            document.getElementById('detailMinPurpose').innerText = minData.purpose;
+            document.getElementById('detailMinAccom').innerText = minData.accommodation;
+            document.getElementById('detailMinComp').innerText = minData.companionType || "동반자 없음";
+            document.getElementById('detailMinPkg').innerText = minData.packageType.includes('구매 안함') ? '개인 자유여행' : minData.packageType;
+
+            document.getElementById('detailAvgPrice').innerText = avgData.totalPrice.toLocaleString() + " 원";
+            document.getElementById('detailAvgAge').innerText = avgData.age;
+            document.getElementById('detailAvgDays').innerText = avgData.days + "일";
+            document.getElementById('detailAvgPurpose').innerText = avgData.purpose;
+            document.getElementById('detailAvgAccom').innerText = avgData.accommodation;
+            document.getElementById('detailAvgComp').innerText = avgData.companionType || "동반자 없음";
+            document.getElementById('detailAvgPkg').innerText = avgData.packageType.includes('구매 안함') ? '개인 자유여행' : avgData.packageType;
+
+            document.getElementById('detailMaxPrice').innerText = maxData.totalPrice.toLocaleString() + " 원";
+            document.getElementById('detailMaxAge').innerText = maxData.age;
+            document.getElementById('detailMaxDays').innerText = maxData.days + "일";
+            document.getElementById('detailMaxPurpose').innerText = maxData.purpose;
+            document.getElementById('detailMaxAccom').innerText = maxData.accommodation;
+            document.getElementById('detailMaxComp').innerText = maxData.companionType || "동반자 없음";
+            document.getElementById('detailMaxPkg').innerText = maxData.packageType.includes('구매 안함') ? '개인 자유여행' : maxData.packageType;
+
+            const detailReport = document.getElementById('predictionDetailReport');
+            detailReport.classList.remove('hidden');
+            detailReport.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+
+        function findMostFrequent(arr, key) {
+            if (arr.length === 0) return "-";
+            const countMap = {};
+            let maxCnt = 0;
+            let targetVal = arr[0][key];
+
+            arr.forEach(item => {
+                const val = item[key];
+                countMap[val] = (countMap[val] || 0) + 1;
+                if (countMap[val] > maxCnt) {
+                    maxCnt = countMap[val];
+                    targetVal = val;
+                }
+            });
+            return targetVal;
+        }
+
+        // ----------------------------------------------------
+        // 이벤트 바인딩 및 부팅 초기화
+        // ----------------------------------------------------
+        document.getElementById('closeDetailReportBtn').addEventListener('click', () => {
+            document.getElementById('predictionDetailReport').classList.add('hidden');
+        });
+
+        document.getElementById('calcBtn').addEventListener('click', () => {
+            calculatePredictiveMatch();
+        });
+
+        // 환율 계산기 동적 관측 이벤트
+        document.getElementById('calcInputKRW').addEventListener('input', executeExchangeCalculation);
+        document.getElementById('calcCurrencySelect').addEventListener('change', executeExchangeCalculation);
+
+        // 최초 로드 시 메인 화면이므로 overflow를 제한하여 깔끔하게 고정
+        window.onload = function () {
+            document.body.classList.add('overflow-hidden');
+            lucide.createIcons();
+
+            // 실시간 변동기 작동 개시
+            startLiveRateFluctuation();
+        };
+    </script>
+</body>
+
+</html>
